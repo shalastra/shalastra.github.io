@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Postgres on Szymon Halastra</title><link>https://shalastra.github.io/categories/postgres/</link><description>Szymon Halastra (Postgres)</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 02 May 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://shalastra.github.io/categories/postgres/index.xml" rel="self" type="application/rss+xml"/><item><title>Copy CSV to Postgres database inside Docker</title><link>https://shalastra.github.io/posts/postgres-docker/</link><pubDate>Sat, 02 May 2020 00:00:00 +0000</pubDate><guid>https://shalastra.github.io/posts/postgres-docker/</guid><description>&lt;p>&lt;img src="https://shalastra.github.io/img/docker_postgres.png" alt="docker-postgres">&lt;/p>
+&lt;p>With Docker containers, it is easier to run services like databases without installing them locally. But how to populate the database with raw data in the CSV file?&lt;/p>
+&lt;p>In this article, I want to explain that. Let&amp;rsquo;s start with the project structure.&lt;/p>
+&lt;h2 id="project-structure">Project structure&lt;/h2>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-bash" data-lang="bash">data/
+datasource.csv
+db/
+scripts/
+1_init.sql
+2_copy.sql
+Dockerfile
+docker-compose.yml&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>&lt;code>Dockerfile&lt;/code> uses postgres image and copies all *.sql files to /docker-entrypoint-initdb.d/. Later, all files are executed in alphanumerical order, that&amp;rsquo;s why *.sql files start with digits. Finally, the port 6666 is exposed.&lt;/p>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-docker" data-lang="docker">&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> postgres:alpine&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> *.sql /docker-entrypoint-initdb.d/&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ADD&lt;/span> scripts/1_init.sql /docker-entrypoint-initdb.d&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ADD&lt;/span> scripts/2_copy.sql /docker-entrypoint-initdb.d&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> chmod a+r /docker-entrypoint-initdb.d/*&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">EXPOSE&lt;/span>&lt;span style="color:#e6db74"> 6666&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>&lt;code>1_init.sql&lt;/code> creates the DB table, it has to have the same column names as in CSV file.&lt;/p>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-SQL" data-lang="SQL">&lt;span style="color:#66d9ef">CREATE&lt;/span> &lt;span style="color:#66d9ef">TABLE&lt;/span> &lt;span style="color:#66d9ef">table_name&lt;/span>
+(
+&lt;span style="color:#75715e">--statement body
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>);&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>&lt;code>2_copy.sql&lt;/code> is responsible for copying data from the CSV to postgres.&lt;/p>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-SQL" data-lang="SQL">&lt;span style="color:#66d9ef">COPY&lt;/span> &lt;span style="color:#66d9ef">table_name&lt;/span> &lt;span style="color:#66d9ef">FROM&lt;/span> &lt;span style="color:#e6db74">&amp;#39;/data/datasource.csv&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">DELIMITER&lt;/span> &lt;span style="color:#e6db74">&amp;#39;,&amp;#39;&lt;/span> CSV HEADER;&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>CSV the file is located in data folder inside of the project.
+docker-compose.yml builds the Dockerfile from db folder and make it accessible through 5431port. As environmental properties basic postgres properties are used. And at the end data folder with CSV file is copied to the container.&lt;/p>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-docker" data-lang="docker">version: &lt;span style="color:#e6db74">&amp;#39;3.3&amp;#39;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>services:&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> db: &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> build: ./db &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> container_name: postgres &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> ports: &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> - &lt;span style="color:#e6db74">&amp;#34;5431:6666&amp;#34;&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> environment: &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> - POSTGRES_USER&lt;span style="color:#f92672">=&lt;/span>postgres &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> - POSTGRES_PASSWORD&lt;span style="color:#f92672">=&lt;/span>postgres &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> - POSTGRES_DB&lt;span style="color:#f92672">=&lt;/span>db_name &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> volumes:&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> - ./data:/data&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>Only thing left is to run &lt;code>docker-compose&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-bash" data-lang="bash">docker-compose up -d&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
