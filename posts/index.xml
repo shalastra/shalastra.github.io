@@ -1,41 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Szymon Halastra</title><link>https://shalastra.github.io/posts/</link><description>Szymon Halastra (Posts)</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 08 May 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://shalastra.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Reading a file with Java Stream</title><link>https://shalastra.github.io/posts/java-file-stream/</link><pubDate>Fri, 08 May 2020 00:00:00 +0000</pubDate><guid>https://shalastra.github.io/posts/java-file-stream/</guid><description>&lt;p>Since Java 8 has been released, new ways of solving common issues appeared. One of them is Stream API. Except the main purpose, which are collection manipulations, there is another purpose - file reading. &lt;br>
-But before that, let&amp;rsquo;s dive in the classic way, pre-stream world.&lt;/p>
-&lt;h2 id="old-way">Old way&lt;/h2>
-&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#f92672">&amp;lt;!&lt;/span>DOCTYPE html&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>html lang&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;en&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>head&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>meta charset&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;UTF-8&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>title&lt;span style="color:#f92672">&amp;gt;&lt;/span>Example HTML5 Document&lt;span style="color:#f92672">&amp;lt;/&lt;/span>title&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>head&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>body&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>p&lt;span style="color:#f92672">&amp;gt;&lt;/span>Test&lt;span style="color:#f92672">&amp;lt;/&lt;/span>p&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>body&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>html&lt;span style="color:#f92672">&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
-&lt;h2 id="stream-based">Stream based&lt;/h2>
-&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#f92672">&amp;lt;!&lt;/span>DOCTYPE html&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>html lang&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;en&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>head&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>meta charset&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;UTF-8&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>title&lt;span style="color:#f92672">&amp;gt;&lt;/span>Example HTML5 Document&lt;span style="color:#f92672">&amp;lt;/&lt;/span>title&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>head&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>body&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>p&lt;span style="color:#f92672">&amp;gt;&lt;/span>Test&lt;span style="color:#f92672">&amp;lt;/&lt;/span>p&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>body&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>html&lt;span style="color:#f92672">&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
-&lt;h3 id="small-improvement">Small improvement&lt;/h3>
-&lt;p>Previous solution looks pretty good, right? Unfortunately, we have forgotten about one thing - closing the stream. &lt;br>
-Luckily, Java provides a neat way of handling resources usage, and closing them just after we don&amp;rsquo;t need them anymore - &lt;code>try-with-resources&lt;/code>.&lt;/p>
-&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#f92672">&amp;lt;!&lt;/span>DOCTYPE html&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>html lang&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;en&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>head&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>meta charset&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;UTF-8&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>title&lt;span style="color:#f92672">&amp;gt;&lt;/span>Example HTML5 Document&lt;span style="color:#f92672">&amp;lt;/&lt;/span>title&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>head&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>body&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;&lt;/span>p&lt;span style="color:#f92672">&amp;gt;&lt;/span>Test&lt;span style="color:#f92672">&amp;lt;/&lt;/span>p&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>body&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;span style="color:#f92672">&amp;lt;/&lt;/span>html&lt;span style="color:#f92672">&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
-&lt;h2 id="conclusion">Conclusion&lt;/h2></description></item><item><title>Copy CSV to Postgres database inside Docker</title><link>https://shalastra.github.io/posts/postgres-docker/</link><pubDate>Sat, 02 May 2020 00:00:00 +0000</pubDate><guid>https://shalastra.github.io/posts/postgres-docker/</guid><description>&lt;p>&lt;img src="https://shalastra.github.io/img/docker_postgres.png" alt="docker-postgres">&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Szymon Halastra</title><link>https://shalastra.github.io/posts/</link><description>Szymon Halastra (Posts)</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 02 May 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://shalastra.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Copy CSV to Postgres database inside Docker</title><link>https://shalastra.github.io/posts/postgres-docker/</link><pubDate>Sat, 02 May 2020 00:00:00 +0000</pubDate><guid>https://shalastra.github.io/posts/postgres-docker/</guid><description>&lt;p>&lt;img src="https://shalastra.github.io/img/docker_postgres.png" alt="docker-postgres">&lt;/p>
 &lt;p>With Docker containers, it is easier to run services like databases without installing them locally. But how to populate the database with raw data in the CSV file?&lt;/p>
 &lt;p>In this article, I want to explain that. Let&amp;rsquo;s start with the project structure.&lt;/p>
 &lt;h2 id="project-structure">Project structure&lt;/h2>
